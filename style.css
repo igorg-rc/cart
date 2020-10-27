@@ -1,0 +1,12 @@
+.carousel-img {
+  filter: contrast(70%) brightness(50%);
+}
+
+.card-img{
+  height: 100%;
+  /* width: 100%; */
+}
+
+@media(max-width: 478px) {
+
+}

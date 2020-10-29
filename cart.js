@@ -85,7 +85,6 @@ class UI {
       button.addEventListener('click', (event) => {
         event.target.innerText = 'In cart';
         event.target.disabled = true;
-        alert('Thank you! Item was added into the cart.');
         // get product from products
         let cartItem = { ...Storage.getProduct(id), amount: 1 };
 

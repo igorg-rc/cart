@@ -8,6 +8,8 @@ const productsDOM = document.querySelector('#all-products');
 const cartItems = document.querySelector('.cart-items');
 const cartContent = document.querySelector('.cart-content');
 const cartItem = document.querySelector('.cart-item');
+
+const itemTotal = document.querySelector('.item-total');
 const cartTotal = document.querySelector('.cart-total');
 
 // const cleartBtn = document.querySelector('.clear-cart');
@@ -55,12 +57,12 @@ class UI {
               <p class="card-text">${product.description}.</p>
               <div class="d-flex justify-content-between align-items-center">
                 <div class="btn-group">
-                  <button type="button" class="btn btn-sm btn-outline-primary">Quick view</button>
-                  <button type="button" class="btn btn-sm btn-outline-success add-to-cart" data-id="${product.id}">Add to cart</button>
+                  <button type="button" class="btn btn-sm btn-outline-primary">Quick view <i class="fa fa-eye"></i></button>
+                  <button type="button" class="btn btn-sm btn-outline-success add-to-cart" data-id="${product.id}">Add to cart <i class="fa fa-shopping-cart"></i></button>
                 </div>
                 <h5 class="text-muted">$${product.price}</h5>
               </div>
-            </div>
+            </div> 
           </div>
         </div>
       `;
@@ -98,9 +100,7 @@ class UI {
         // display cart item
         this.addCartItem(cartItem);
 
-        // show the cart
       })
-
     });
   }
 
@@ -131,16 +131,91 @@ class UI {
         </td>
         <td>${item.title}</td>
         <td class="item-price">${item.price}<span>$</span></td>
-        <td class="item-qty"><input type="number" class="form-control" id="input1" value="${item.amount}"
-            style="width: 3.5em">
-        </td>
-        <td class="item-total">178<span>$</span></td>
+        <td class="item-qty"><i class="fa fa-minus-square fa-lg text-primary" data-id="${item.id}"></i> <span class="item-amount">${item.amount} </span> <i class="fa fa-plus-square fa-lg text-primary" data-id="${item.id}"></i></td>
         <td>
-          <button class="btn btn-danger" data-id="${item.id}">Remove</button>
+          <button class="btn btn-danger remove-item" data-id="${item.id}"><p class="fa fa-times"></p></button>
         </td>
       </tr>
     `;
     cartContent.appendChild(tr);
+  }
+
+  setupApp() {
+    cart = Storage.getCard();
+    this.setCartValues(cart);
+    this.populateCart(cart);
+
+  }
+
+  populateCart(cart) {
+    cart.forEach(item => {
+      this.addCartItem(item);
+    });
+  }
+
+  cartLogic() {
+    // clear cart button
+    cleartBtn.addEventListener('click', () => {
+      this.clearCart();
+    });
+    // cart functionality
+    cartContent.addEventListener('click', event => {
+      if (event.target.classList.contains('remove-item')) {
+        let removeItem = event.target;
+        let id = removeItem.dataset.id;
+        cartContent.removeChild(removeItem.parentElement.parentElement);
+        this.removeItem(id);
+      } else if (event.target.classList.contains('fa-plus-square')) {
+        let addAmount = event.target;
+        let id = addAmount.dataset.id;
+        console.log(addAmount);
+        let tempItem = cart.find(item => item.id === id);
+        tempItem.amount = tempItem.amount + 1;
+
+        Storage.saveCart(cart);
+        this.setCartValues(cart);
+        addAmount.previousElementSibling.innerText = tempItem.amount;
+      }
+      else if (event.target.classList.contains('fa-minus-square')) {
+        let lowerAmount = event.target;
+        let id = lowerAmount.dataset.id;
+        let tempItem = cart.find(item => item.id === id);
+        tempItem.amount = tempItem.amount - 1;
+        if (tempItem.amount > 0) {
+          Storage.saveCart(cart);
+          this.setCartValues(cart);
+          lowerAmount.nextElementSibling.innerText = tempItem.amount;
+        }
+        else {
+          cartContent.removeChild(lowerAmount.parentElement.parentElement);
+          this.removeItem(id);
+        }
+      }
+    });
+  }
+
+  clearCart() {
+
+    let cartItems = cart.map(item => item.id);
+    cartItems.forEach(id => this.removeItem(id));
+    console.log(cartContent.children);
+
+    while (cartContent.children.length > 0) {
+      cartContent.removeChild(cartContent.children[0]);
+    }
+  }
+
+  removeItem(id) {
+    cart = cart.filter(item => item.id !== id);
+    this.setCartValues(cart);
+    Storage.saveCart(cart);
+    let button = this.getSingleButton(id);
+    button.disabled = false;
+    button.innerHTML = `Add to cart <i class="fa fa-shopping-cart"></i>`;
+  }
+
+  getSingleButton(id) {
+    return buttonsDOM.find(button => button.dataset.id == id);
   }
 }
 
@@ -158,6 +233,16 @@ class Storage {
   static saveCart(cart) {
     localStorage.setItem('cart', JSON.stringify(cart));
   }
+
+  static getCard() {
+    let cart;
+    if (localStorage.getItem('cart') === null) {
+      cart = [];
+    } else {
+      cart = JSON.parse(localStorage.getItem('cart'));
+    }
+    return cart;
+  }
 }
 
 
@@ -165,11 +250,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const ui = new UI();
   const products = new Products();
 
+  // setup app
+  ui.setupApp();
+
   // get all products
   products.getProducts().then(products => {
     ui.displayProducts(products);
     Storage.saveProducts(products);
   }).then(() => {
     ui.getCartButtons();
+    ui.cartLogic();
   });
 });

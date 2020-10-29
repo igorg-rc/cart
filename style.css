@@ -1,11 +1,9 @@
 .carousel-img {
-  /* width: 100%;
-  height: 100%; */
   filter: contrast(80%) brightness(40%);
 }
 
 .cart-img{
-  width: 120px;
+  width: 50px;
 }
 
 @media(min-width: 1600px) {

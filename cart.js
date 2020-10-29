@@ -133,7 +133,7 @@ class UI {
         <td class="item-price">${item.price}<span>$</span></td>
         <td class="item-qty"><i class="fa fa-minus-square fa-lg text-primary" data-id="${item.id}"></i> <span class="item-amount">${item.amount} </span> <i class="fa fa-plus-square fa-lg text-primary" data-id="${item.id}"></i></td>
         <td>
-          <button class="btn btn-danger remove-item" data-id="${item.id}"><p class="fa fa-times"></p></button>
+          <button class="btn btn-danger remove-item" data-id="${item.id}">Remove</button>
         </td>
       </tr>
     `;
@@ -168,7 +168,6 @@ class UI {
       } else if (event.target.classList.contains('fa-plus-square')) {
         let addAmount = event.target;
         let id = addAmount.dataset.id;
-        console.log(addAmount);
         let tempItem = cart.find(item => item.id === id);
         tempItem.amount = tempItem.amount + 1;
 
